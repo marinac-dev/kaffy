@@ -156,12 +156,18 @@ defmodule Kaffy.ResourceForm do
         text_input(form, field, opts)
 
       :binary ->
-        value =
-          data
-          |> Map.get(field, "")
-          |> Base.encode64()
+        # ! We don't use this because field is always present
+        # value =  Map.get(data, field, "") |> Base.encode64()
+        value = Map.get(data, field, "")
 
-        text_input(form, field, [value: value] ++ opts)
+        case value do
+          nil ->
+            text_input(form, field, opts)
+
+          _ ->
+            value = Base.encode64(value)
+            text_input(form, field, [value: value] ++ opts)
+        end
 
       t when t in [:boolean, :boolean_checkbox] ->
         checkbox_opts = add_class(opts, "custom-control-input")
@@ -384,6 +390,7 @@ defmodule Kaffy.ResourceForm do
                       disabled: opts[:readonly],
                       aria_describedby: field
                     )
+
                   _ ->
                     text_input(form, field,
                       class: "form-control",
@@ -456,6 +463,7 @@ defmodule Kaffy.ResourceForm do
         case type do
           :id ->
             number_input(form, field, opts)
+
           _ ->
             text_input(form, field, opts)
         end
